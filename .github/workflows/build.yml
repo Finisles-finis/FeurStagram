@@ -1,0 +1,71 @@
+name: Build Feurstagram
+
+on:
+  workflow_dispatch:
+    inputs:
+      apk_tag:
+        description: "Tag de la release de ton fork qui contient instagram.apk"
+        required: true
+        default: "instagram-base"
+      clone:
+        description: "Installer à côté d'Instagram officiel (--clone)"
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Configure Gradle credentials (patcher dependency)
+        env:
+          GPR_USER: ${{ github.repository_owner }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+        run: |
+          mkdir -p ~/.gradle
+          {
+            echo "gpr.user=${GPR_USER}"
+            echo "gpr.key=${GPR_TOKEN}"
+          } >> ~/.gradle/gradle.properties
+
+      - name: Download the Instagram APK from your release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APK_TAG: ${{ inputs.apk_tag }}
+        run: |
+          gh release download "$APK_TAG" \
+            --repo "${{ github.repository }}" \
+            --pattern "*.apk" \
+            --output instagram.apk \
+            --clobber
+          ls -lh instagram.apk
+
+      - name: Build and patch
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          FEURSTAGRAM_KEYSTORE_PASS: ${{ secrets.FEURSTAGRAM_KEYSTORE_PASS }}
+          FEURSTAGRAM_KEY_PASS: ${{ secrets.FEURSTAGRAM_KEY_PASS }}
+          CLONE: ${{ inputs.clone }}
+        run: |
+          chmod +x build.sh
+          if [ "$CLONE" = "true" ]; then
+            ./build.sh instagram.apk --clone
+          else
+            ./build.sh instagram.apk
+          fi
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: feurstagram-apk
+          path: feurstagram.apk
+          retention-days: 14
+          if-no-files-found: error
