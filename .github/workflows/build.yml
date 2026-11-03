@@ -36,16 +36,22 @@ jobs:
             echo "gpr.key=${GPR_TOKEN}"
           } >> ~/.gradle/gradle.properties
 
-      - name: Download the Instagram APK from your release
+      - name: Download Instagram bundle and merge into one APK
         env:
           GH_TOKEN: ${{ github.token }}
           APK_TAG: ${{ inputs.apk_tag }}
         run: |
+          mkdir -p bundle apkeditor
           gh release download "$APK_TAG" \
             --repo "${{ github.repository }}" \
-            --pattern "*.apk" \
-            --output instagram.apk \
-            --clobber
+            --pattern "*.apkm" --pattern "*.xapk" --pattern "*.apks" \
+            --dir bundle --clobber
+          ls -lh bundle
+          gh release download \
+            --repo REAndroid/APKEditor \
+            --pattern "APKEditor-*.jar" \
+            --dir apkeditor --clobber
+          java -jar apkeditor/APKEditor-*.jar m -i "$(ls bundle/* | head -n1)" -o instagram.apk -f
           ls -lh instagram.apk
       - name: Download Morphe CLI from your release
         env:
