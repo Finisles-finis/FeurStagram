@@ -58,9 +58,20 @@ jobs:
             --dir tools \
             --clobber
           ls -lh tools
+      - name: Download Morphe CLI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p tools
+          gh release download v1.9.1 \
+            --repo MorpheApp/morphe-cli \
+            --pattern "morphe-cli-*-all.jar" \
+            --dir tools \
+            --clobber
+          ls -lh tools
+
       - name: Build and patch
         env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
           FEURSTAGRAM_KEYSTORE_PASS: ${{ secrets.FEURSTAGRAM_KEYSTORE_PASS }}
           FEURSTAGRAM_KEY_PASS: ${{ secrets.FEURSTAGRAM_KEY_PASS }}
           CLONE: ${{ inputs.clone }}
