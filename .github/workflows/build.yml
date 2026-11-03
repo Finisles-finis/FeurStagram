@@ -58,21 +58,18 @@ jobs:
             --dir tools \
             --clobber
           ls -lh tools
-      - name: Download Morphe CLI
+      - name: Download Morphe CLI from your release
         env:
           GH_TOKEN: ${{ github.token }}
+          APK_TAG: ${{ inputs.apk_tag }}
         run: |
           mkdir -p tools
-          gh release download \
-            --repo MorpheApp/morphe-desktop \
-            --pattern "morphe-desktop-*-all.jar" \
-            --dir tools --clobber \
-          || gh release download \
-            --repo MorpheApp/morphe-cli \
-            --pattern "*.jar" \
-            --dir tools --clobber
+          gh release download "$APK_TAG" \
+            --repo "${{ github.repository }}" \
+            --pattern "morphe-*.jar" \
+            --dir tools \
+            --clobber
           ls -lh tools
-
       - name: Build and patch
         env:
           FEURSTAGRAM_KEYSTORE_PASS: ${{ secrets.FEURSTAGRAM_KEYSTORE_PASS }}
