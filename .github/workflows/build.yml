@@ -68,6 +68,13 @@ jobs:
           CLONE: ${{ inputs.clone }}
         run: |
           chmod +x build.sh
+          # Sans secret, on retire les variables pour que build.sh génère une clé jetable
+          if [ -z "$FEURSTAGRAM_KEYSTORE_PASS" ]; then
+            unset FEURSTAGRAM_KEYSTORE_PASS FEURSTAGRAM_KEY_PASS
+          fi
+          if [ -z "$FEURSTAGRAM_KEY_PASS" ]; then
+            unset FEURSTAGRAM_KEY_PASS
+          fi
           if [ "$CLONE" = "true" ]; then
             ./build.sh instagram.apk --clone
           else
