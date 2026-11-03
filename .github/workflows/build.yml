@@ -63,11 +63,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p tools
-          gh release download v1.20.0 \
+          gh release download \
+            --repo MorpheApp/morphe-desktop \
+            --pattern "morphe-desktop-*-all.jar" \
+            --dir tools --clobber \
+          || gh release download \
             --repo MorpheApp/morphe-cli \
-            --pattern "morphe-cli-*-all.jar" \
-            --dir tools \
-            --clobber
+            --pattern "*.jar" \
+            --dir tools --clobber
           ls -lh tools
 
       - name: Build and patch
