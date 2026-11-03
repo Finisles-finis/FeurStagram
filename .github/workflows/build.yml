@@ -61,6 +61,14 @@ jobs:
             --dir tools \
             --clobber
           ls -lh tools
+      - name: Restore signing keystore
+        env:
+          KS_B64: ${{ secrets.FEURSTAGRAM_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > feurstagram.keystore
+            echo "Keystore restauré"
+          fi
       - name: Build and patch
         env:
           FEURSTAGRAM_KEYSTORE_PASS: ${{ secrets.FEURSTAGRAM_KEYSTORE_PASS }}
