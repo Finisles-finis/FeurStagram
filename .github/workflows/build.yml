@@ -47,26 +47,17 @@ jobs:
             --output instagram.apk \
             --clobber
           ls -lh instagram.apk
-      - name: Download Morphe CLI
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p tools
-          gh release download v1.20.0 \
-            --repo MorpheApp/morphe-cli \
-            --pattern "morphe-cli-*-all.jar" \
-            --dir tools \
-            --clobber
-          ls -lh tools
       - name: Download Morphe CLI from your release
         env:
           GH_TOKEN: ${{ github.token }}
           APK_TAG: ${{ inputs.apk_tag }}
         run: |
+          echo "Assets de la release $APK_TAG :"
+          gh release view "$APK_TAG" --repo "${{ github.repository }}" --json assets --jq '.assets[].name'
           mkdir -p tools
           gh release download "$APK_TAG" \
             --repo "${{ github.repository }}" \
-            --pattern "morphe-*.jar" \
+            --pattern "*.jar" \
             --dir tools \
             --clobber
           ls -lh tools
